@@ -1,11 +1,18 @@
-readline = require('readline-sync')
+const readline = require('readline-sync')
+const robots = {
+    //userInput: require('./robots/user-input.js')
+    text: require('./robots/text.js')
+}
 
-function inicio() {
+async function inicio() {
     
     const content = {}
 
     content.searchTerm = solicitarTermoPesquisa() 
     content.prefix = solicitarPrefixoPesquisa()
+    
+    //userInput.userInput(content)
+    await robots.text(content)
 
     function solicitarTermoPesquisa () {
         return readline.question('Informe o termo a pesquisar: ')
@@ -18,7 +25,6 @@ function inicio() {
 
         return selectedPrefixText;
     }
-
     console.log(content)
 }
 
