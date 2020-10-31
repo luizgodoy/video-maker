@@ -8,7 +8,7 @@ const watsonURL = require('../credentials/watson-nlu.json').url
 const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1')
 const { IamAuthenticator } = require('ibm-watson/auth')
 
-var nlu = new NaturalLanguageUnderstandingV1({
+const nlu = new NaturalLanguageUnderstandingV1({
   version: '2020-08-01',
   authenticator: new IamAuthenticator({
     apikey: watsonApiKey,
@@ -16,12 +16,18 @@ var nlu = new NaturalLanguageUnderstandingV1({
   serviceUrl: watsonURL
 });
 
-async function robot(content) {
+const state = require('./state.js')
+
+async function robot() {
+    const content = state.load();
+
     await buscarConteudoWikipedia(content)
     refinarConteudo(content)
     dividirConteudoEmSentencas(content)
     limitarMaximoSentencas(content)
     await buscarPalavrasChavesSentencas(content)
+
+    state.save(content);
 
     async function buscarConteudoWikipedia(content) {
         const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey)
