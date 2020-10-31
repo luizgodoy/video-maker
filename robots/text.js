@@ -2,10 +2,26 @@ const algorithmia = require('algorithmia')
 const algorithmiaApiKey = require('../credentials/algorithmia.json').apiKey
 const sentenceBoundaryDetection = require('sbd')
 
+const watsonApiKey = require('../credentials/watson-nlu.json').apikey
+const watsonURL = require('../credentials/watson-nlu.json').url
+
+const NaturalLanguageUnderstandingV1 = require('ibm-watson/natural-language-understanding/v1')
+const { IamAuthenticator } = require('ibm-watson/auth')
+
+var nlu = new NaturalLanguageUnderstandingV1({
+  version: '2020-08-01',
+  authenticator: new IamAuthenticator({
+    apikey: watsonApiKey,
+  }),
+  serviceUrl: watsonURL
+});
+
 async function robot(content) {
     await buscarConteudoWikipedia(content)
     refinarConteudo(content)
     dividirConteudoEmSentencas(content)
+    limitarMaximoSentencas(content)
+    await buscarPalavrasChavesSentencas(content)
 
     async function buscarConteudoWikipedia(content) {
         const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey)
@@ -20,7 +36,7 @@ async function robot(content) {
         const withoutBlankLines = removerLinhasBranco(content.sourceContentOriginal)
         const withoutMarkdown = removerMarcadores(withoutBlankLines)
         const withoutDatesInParentheses = removerDatasEntreParenteses(withoutMarkdown)
-        
+
         content.sourceContentSanitized = withoutDatesInParentheses
 
         function removerLinhasBranco(text) {
@@ -59,6 +75,39 @@ async function robot(content) {
                 text: sentence,
                 keywords: [],
                 images: []
+            })
+        })
+    }
+
+    function limitarMaximoSentencas(content) {
+        content.sentences = content.sentences.slice(0, content.maximumSentences)
+    }
+
+    async function buscarPalavrasChavesSentencas(content) {
+        for (const sentence of content.sentences) {
+            sentence.keywords = await buscarInterpretacaoWatsonKeywords(sentence.text)
+        }
+    }
+
+    async function buscarInterpretacaoWatsonKeywords(sentence) {
+        return new Promise((resolve, reject) => {
+            nlu.analyze ({
+                text: sentence,
+                features: {
+                    keywords: {}
+                }
+            }, 
+            (error, response) => {
+                if(error) {
+                    reject(error)
+                    return
+                }
+
+                const keywords = response.result.keywords.map((keyword) => {
+                    return keyword.text
+                  })
+                  
+                resolve(keywords)
             })
         })
     }

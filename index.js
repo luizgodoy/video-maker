@@ -6,7 +6,9 @@ const robots = {
 
 async function inicio() {
     
-    const content = {}
+    const content = {
+        maximumSentences: 7
+    }
 
     content.searchTerm = solicitarTermoPesquisa() 
     content.prefix = solicitarPrefixoPesquisa()
@@ -19,13 +21,14 @@ async function inicio() {
     }
 
     function solicitarPrefixoPesquisa() {
-        const prefixes = ['Quem é','O que é','A história', 'Porque']
-        const selectedPrefixIndex = readline.keyInSelect(prefixes, 'Escolha uma opção:')
+        const prefixes = ['Quem é','O que é','A história', 'Porque','Como', 'Qual é', 'Passo a passo para']
+        const selectedPrefixIndex = readline.keyInSelect(prefixes, 'Escolha uma opcao:')
         const selectedPrefixText = prefixes[selectedPrefixIndex]
 
         return selectedPrefixText;
     }
-    console.log(content)
+    //console.log(content)
+    console.log(JSON.stringify(content,null,4))
 }
 
 inicio()
