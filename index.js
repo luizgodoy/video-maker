@@ -11,8 +11,8 @@ async function inicio() {
     await robots.text()
     await robots.image()
 
-    const content = robots.state.load()
-    console.dir(content, { depth: null } )
+    //const content = robots.state.load()
+    //console.dir(content, { depth: null } )
 
     //console.log(JSON.stringify(content,null,4))
     //console.log(content)
